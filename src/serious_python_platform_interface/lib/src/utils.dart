@@ -22,7 +22,7 @@ Future<String> extractAssetOrFile(String path,
   if (await destDir.exists()) {
     if (kDebugMode) {
       // always re-create in debug mode
-      await destDir.delete(recursive: true);
+      // await destDir.delete(recursive: true);
     } else {
       if (checkHash) {
         // read asset hash from asset
