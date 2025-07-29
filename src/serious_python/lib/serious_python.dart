@@ -14,9 +14,9 @@ class SeriousPython {
     return SeriousPythonPlatform.instance.getPlatformVersion();
   }
 
-  /// Runs Python program from an asset.
+  /// Runs Python program from a zip archive.
   ///
-  /// [assetPath] is the path to an asset which is a zip archive
+  /// [filePath] is the path to a file which is a zip archive
   /// with a Python program. When the app starts the archive is unpacked
   /// to a temporary directory and Serious Python plugin will try to run
   /// `main.py` in the root of the archive. Current directory is changed to
@@ -34,15 +34,15 @@ class SeriousPython {
   ///
   /// Set [sync] to `true` to sychronously run Python program; otherwise the
   /// program starts in a new thread.
-  static Future<String?> run(String assetPath,
+  static Future<String?> run(String filePath,
       {String? appFileName,
       List<String>? modulePaths,
       Map<String, String>? environmentVariables,
       bool? sync}) async {
     // unpack app from asset
     String appPath = "";
-    if (path.extension(assetPath) == ".zip") {
-      appPath = await extractAssetZip(assetPath);
+    if (path.extension(filePath) == ".zip") {
+      appPath = await extractFileZip(filePath);
       if (appFileName != null) {
         appPath = path.join(appPath, appFileName);
       } else if (await File(path.join(appPath, "main.pyc")).exists()) {
@@ -54,7 +54,7 @@ class SeriousPython {
             "App archive must contain either `main.py` or `main.pyc`; otherwise `appFileName` must be specified.");
       }
     } else {
-      appPath = await extractAsset(assetPath);
+      appPath = await extractAsset(filePath);
     }
 
     // set current directory to app path
