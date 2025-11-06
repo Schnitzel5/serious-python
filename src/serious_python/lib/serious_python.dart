@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:serious_python_platform_interface/serious_python_platform_interface.dart';
 
 export 'package:serious_python_platform_interface/src/utils.dart';
@@ -16,11 +18,10 @@ class SeriousPython {
 
   /// Runs Python program from a zip archive.
   ///
-  /// [filePath] is the path to a file which is a zip archive
-  /// with a Python program. When the app starts the archive is unpacked
-  /// to a temporary directory and Serious Python plugin will try to run
+  /// [dirPath] is the path to a extracted zip archive
+  /// with a Python program. When the app starts, Serious Python plugin will try to run
   /// `main.py` in the root of the archive. Current directory is changed to
-  /// a temporary directory.
+  /// the target directory.
   ///
   /// If a Python app has a different entry point
   /// it could be specified with [appFileName] parameter.
@@ -34,27 +35,24 @@ class SeriousPython {
   ///
   /// Set [sync] to `true` to sychronously run Python program; otherwise the
   /// program starts in a new thread.
-  static Future<String?> run(String filePath,
+  static Future<String?> run(String dirPath,
       {String? appFileName,
       List<String>? modulePaths,
       Map<String, String>? environmentVariables,
       bool? sync}) async {
     // unpack app from asset
-    String appPath = "";
-    if (path.extension(filePath) == ".zip") {
-      appPath = await extractFileZip(filePath);
-      if (appFileName != null) {
-        appPath = path.join(appPath, appFileName);
-      } else if (await File(path.join(appPath, "main.pyc")).exists()) {
-        appPath = path.join(appPath, "main.pyc");
-      } else if (await File(path.join(appPath, "main.py")).exists()) {
-        appPath = path.join(appPath, "main.py");
-      } else {
-        throw Exception(
-            "App archive must contain either `main.py` or `main.pyc`; otherwise `appFileName` must be specified.");
-      }
+    final supportDir = await getApplicationSupportDirectory();
+    String appPath =
+        Directory(p.join(supportDir.path, "flet", p.dirname(dirPath))).path;
+    if (appFileName != null) {
+      appPath = path.join(appPath, appFileName);
+    } else if (await File(path.join(appPath, "main.pyc")).exists()) {
+      appPath = path.join(appPath, "main.pyc");
+    } else if (await File(path.join(appPath, "main.py")).exists()) {
+      appPath = path.join(appPath, "main.py");
     } else {
-      appPath = await extractAsset(filePath);
+      throw Exception(
+          "App archive must contain either `main.py` or `main.pyc`; otherwise `appFileName` must be specified.");
     }
 
     // set current directory to app path

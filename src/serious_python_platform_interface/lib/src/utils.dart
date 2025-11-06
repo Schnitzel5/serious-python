@@ -65,7 +65,7 @@ Future<String> extractAssetOrFile(String path,
     await extractArchiveToDisk(archive, destDir.path);
   } catch (e) {
     debugPrint("Error unpacking archive: $e");
-    await destDir.delete(recursive: true);
+    // await destDir.delete(recursive: true);
     rethrow;
   }
 
